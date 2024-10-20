@@ -156,7 +156,7 @@ app.post('/get_conversations', async (req, res) => {
 
 // Takes a conversationID
 // Returns a list of messages in oder that they were orignially sent
-app.get('/get_messages', async (req, res) => {
+app.post('/get_messages', async (req, res) => {
     const { conversationID } = req.body;
     try {
         const { data, error } = await supabase
@@ -185,7 +185,7 @@ app.get('/get_messages', async (req, res) => {
 });
 
 
-app.get('/create_itenerary', async (req, res) => {
+app.post('/create_itenerary', async (req, res) => {
 
     const { userId, location, minBudget, maxBudget, startDate, endDate } = req.body
 
