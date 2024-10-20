@@ -121,7 +121,7 @@ app.post('/create_conversations', async (req, res) => {
 
 app.get('/get_conversations', async (req, res) => {
     const { userid } = req.body; 
-
+    console.log(userid)
     try {
         const { data: conversations, error: convError } = await supabase
             .from('Conversations')
