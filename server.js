@@ -150,6 +150,7 @@ const example = `{
 // Returns the conversationID.
 app.post('/generate-itinerary', async (req, res) => {
     try {
+        console.log(req.body);
       const { location, minBudget, maxBudget, selectedInterests, _selectedStartDay, _selectedEndDay } = req.body;
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
