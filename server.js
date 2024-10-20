@@ -1,4 +1,5 @@
 import express from 'express';
+require('dotenv').config();
 
 import { createClient } from '@supabase/supabase-js'
 import * as deepl from 'deepl-node';
@@ -194,8 +195,6 @@ app.get('/get_messages', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-
-
 
 
 app.get('/create_itenerary', async (req, res) => {
