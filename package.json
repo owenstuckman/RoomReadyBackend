@@ -2,6 +2,7 @@
   "name": "roomreadybackend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
@@ -12,7 +13,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "express": "^4.21.1"
+    "@grpc/proto-loader": "^0.7.13",
+    "express": "^4.21.1",
+    "firebase": "^10.14.1",
+    "firebase-admin": "^12.6.0",
+    "protobufjs": "^7.4.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
