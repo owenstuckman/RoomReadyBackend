@@ -2,6 +2,7 @@ import express from 'express';
 
 import { createClient } from '@supabase/supabase-js'
 import * as deepl from 'deepl-node';
+import cors from 'cors';
 
 // Create a single supabase client for interacting with your database
 const supabase = createClient('https://tsewlrukrykkycootlsb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzZXdscnVrcnlra3ljb290bHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkzNjcwNTUsImV4cCI6MjA0NDk0MzA1NX0.DNwdRirUSViojOqOOLHaJ_lW9u2jd1siOxqdmQWz6PU')
@@ -13,6 +14,10 @@ const port = 3000;
 
 app.use(express.json());
 
+app.use(cors({
+    origin: '*' // Allow requests from any origin (for testing purposes)
+  }));
+  
 // https://developers.deepl.com/docs/resources/supported-languages#target-languages
 async function translate(text, sourceLang, targetLang) {
 
