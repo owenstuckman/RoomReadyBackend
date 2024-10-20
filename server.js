@@ -139,23 +139,7 @@ app.get('/get_conversations', async (req, res) => {
             return;
         }
 
-        const conversationIDs = conversations.map(conv => conv.conversationID);
-
-        const { data: recentMessages, error: msgError } = await supabase
-            .from('Message')
-            .select('conversation, sender, receiver, senderBody, receiverBody, created_at')
-            .in('conversation', conversationIDs) // Get messages for all user's conversations
-            .order('created_at', { ascending: false }) // Order by latest message time
-            .filter('conversation', 'in', `(${conversationIDs.join(',')})`) // Fetch all messages in user's conversations
-            .limit(1, { partitionBy: 'conversation' }); // Get only the latest message per conversation
-
-        if (msgError) {
-            console.log(msgError);
-            res.status(500).send('Error retrieving recent messages');
-            return;
-        }
-
-        res.status(200).json(recentMessages);
+        res.status(200).json(conversations);
 
     } catch (err) {
         console.log(err);
