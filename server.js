@@ -3,7 +3,13 @@ import express from 'express';
 import { createClient } from '@supabase/supabase-js'
 import * as deepl from 'deepl-node';
 import cors from 'cors';
+import axios from 'axios';
+import OpenAI from 'openai';
 
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  
 // Create a single supabase client for interacting with your database
 const supabase = createClient('https://tsewlrukrykkycootlsb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzZXdscnVrcnlra3ljb290bHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkzNjcwNTUsImV4cCI6MjA0NDk0MzA1NX0.DNwdRirUSViojOqOOLHaJ_lW9u2jd1siOxqdmQWz6PU')
 
@@ -103,24 +109,121 @@ app.get('/test', async (req, res) => {
     
 });
 
+const example = `{
+        'date': 'October 22 2024, Tuesday',
+        'events': [
+          {'time': '9:00AM', 'description': 'Breakfast at La Grande Boucherie'},
+          {'time': '10:00AM', 'description': 'Walk at Central Park'},
+          {'time': '12:00PM', 'description': 'Lunch at The Modern'},
+          {'time': '1:00PM', 'description': 'Go to MoMa'},
+          {'time': '5:30PM', 'description': 'Go to Manhattan Art & Antiques Center'},
+          {'time': '7:00PM', 'description': 'Dinner at Ellen’s Stardust Diner'},
+        ]
+      },
+      {
+        'date': 'October 23 2024, Wednesday',
+        'events': [
+          {'time': '9:00AM', 'description': 'Breakfast at Levain Bakery'},
+          {'time': '10:00AM', 'description': 'Go to The Metropolitan Museum of Art'},
+          {'time': '12:00PM', 'description': 'Lunch at The MET Dining Room'},
+          {'time': '3:00PM', 'description': 'Visit Michael Werner Gallery'},
+          {'time': '6:00PM', 'description': 'Walk at 5th Avenue'},
+          {'time': '7:00PM', 'description': 'Dinner at The Penrose Bar'},
+        ]
+      },
+      {
+
+          'date': 'October 23 2024, Wednesday',
+        'events': [
+          {'time': '9:00AM', 'description': 'Breakfast at Levain Bakery'},
+          {'time': '10:00AM', 'description': 'Go to The Metropolitan Museum of Art'},
+          {'time': '12:00PM', 'description': 'Lunch at The MET Dining Room'},
+          {'time': '3:00PM', 'description': 'Visit Michael Werner Gallery'},
+          {'time': '6:00PM', 'description': 'Walk at 5th Avenue'},
+          {'time': '7:00PM', 'description': 'Dinner at The Penrose Bar'},
+        ]
+        
+
+      },`
 // Takes in a tourist, local and location. 
 // Creates a conversation between them.
 // Returns the conversationID.
-app.post('/create_conversations', async (req, res) => {
-    const { touristID, localID, location } = req.body
+app.post('/generate-itinerary', async (req, res) => {
+    try {
+      const { location, minBudget, maxBudget, selectedInterests, _selectedStartDay, _selectedEndDay } = req.body;
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        response_format: {"type" : "json_object"},
+        messages: [
+          {
+              role: 'system',
+              content: [
+                  { type: 'text', text: 'You are a travel planner'}
+              ]
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `
+        I want to create an itinerary for a trip to ${location} starting from ${_selectedStartDay} to ${_selectedEndDay}. 
+        My budget is between ${minBudget} and ${maxBudget} dollars. 
+        My interests include ${selectedInterests.join(', ')}. 
+        Can you suggest a detailed day-by-day itinerary including time slots for each event?
 
-    const { data, error } = await supabase
-    .from('Conversations')
-    .insert({location: location, tourist : touristID, local : localID})
-    .select()
-
-    if (error) {
-        console.log(error)
+        Also, please suggest a list of items I should bring on the trip based on the destination and activities.
+        return in a JSON format. Here is an examople ${example} make it in this format`,
+              },
+            ],
+          },
+        ],
+      });
+  
+      res.json({ result: JSON.parse(response.choices[0].message.content) });
+    } catch (error) {
+      console.error('Error analyzing ingredients:', error);
+      res.status(500).json({ error: 'Failed to analyze ingredients' });
     }
-    
-    res.status(200).send(String(data[0].conversationID));
+  });
 
-})
+
+
+// Helper function to parse the GPT response into a structured format
+function parseItinerary(gptResponse) {
+    // Here, we assume that the GPT response is in a format that can be split and parsed into a structured itinerary and items
+    const itinerary = {};
+    const itemsToBring = [];
+
+    const days = gptResponse.split('Day');
+    
+    days.forEach(day => {
+        if (day.trim()) {
+            const lines = day.trim().split('\n');
+            const dayKey = lines[0].trim();
+            itinerary[dayKey] = [];
+
+            lines.slice(1).forEach(line => {
+                const [time, event] = line.split(':');
+                if (time && event) {
+                    itinerary[dayKey].push({ time: time.trim(), event: event.trim() });
+                }
+            });
+        }
+    });
+
+    // Extracting stuff to bring from GPT response (assuming it's formatted correctly)
+    const bringSection = gptResponse.split('Stuff to bring:')[1];
+    if (bringSection) {
+        itemsToBring.push(...bringSection.split('\n').map(item => item.trim()).filter(item => item));
+    }
+
+    return {
+        itinerary,
+        stuffToBring: itemsToBring
+    };
+}
+
 
 //FIX ME
 
