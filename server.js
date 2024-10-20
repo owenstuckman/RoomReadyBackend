@@ -1,5 +1,4 @@
 import express from 'express';
-require('dotenv').config();
 
 import { createClient } from '@supabase/supabase-js'
 import * as deepl from 'deepl-node';
