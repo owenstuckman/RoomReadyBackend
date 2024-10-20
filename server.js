@@ -82,7 +82,7 @@ app.post('/create-user', async (req, res) => {
 
     const { data, error } = await supabase
     .from('Users')
-    .insert({firstNmae : firstName, lastName : lastName, language : language})
+    .insert({firstName : firstName, lastName : lastName, language : language})
     .select()
 
     if (error) {
