@@ -124,7 +124,7 @@ app.post('/create_conversations', async (req, res) => {
 
 //FIX ME
 
-app.get('/get_conversations', async (req, res) => {
+app.post('/get_conversations', async (req, res) => {
     const { userid } = req.body; 
     console.log(userid)
     try {
